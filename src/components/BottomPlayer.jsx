@@ -1,13 +1,14 @@
 "use client";
 import { useEffect, useRef } from "react";
 import usePlayerStore from "@/store/playerStore";
-import { Play, Pause, SkipBack, SkipForward, Download, Volume2 } from "lucide-react";
+import { Play, Pause, SkipForward, Download } from "lucide-react"; // Icons
 
 export default function BottomPlayer() {
-  const { currentSong, isPlaying, togglePlay, playNext, playPrev, volume, setVolume } = usePlayerStore();
+  const { currentSong, isPlaying, togglePlay, playNext } = usePlayerStore();
   const audioRef = useRef(null);
 
-  const getAudioUrl = (song) => song?.downloadUrl?.[song.downloadUrl.length - 1]?.url;
+  const audioLink = currentSong?.downloadUrl?.[currentSong.downloadUrl.length - 1]?.url;
+  const imageLink = currentSong?.image?.[2]?.url || currentSong?.image?.[0]?.url;
 
   useEffect(() => {
     if (audioRef.current) {
@@ -16,50 +17,46 @@ export default function BottomPlayer() {
     }
   }, [isPlaying, currentSong]);
 
-  useEffect(() => {
-    if (audioRef.current) audioRef.current.volume = volume;
-  }, [volume]);
-
   if (!currentSong) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50">
-      {/* Glass Player Container */}
-      <div className="glass rounded-2xl p-3 flex items-center justify-between shadow-2xl max-w-5xl mx-auto">
-        <audio ref={audioRef} src={getAudioUrl(currentSong)} onEnded={playNext} autoPlay />
-
-        {/* 1. Song Info */}
-        <div className="flex items-center gap-3 w-[35%] overflow-hidden">
-          <img 
-            src={currentSong.image[2]?.url} 
-            alt="art" 
-            className={`w-12 h-12 rounded-full border-2 border-white/20 object-cover ${isPlaying ? "animate-spin-slow" : ""}`} 
-          />
-          <div className="min-w-0">
-            <h4 className="font-bold text-sm text-white truncate">{currentSong.name}</h4>
-            <p className="text-xs text-gray-300 truncate">{currentSong.artists.primary[0]?.name}</p>
-          </div>
+    <div className="fixed bottom-0 left-0 right-0 z-[100]">
+      {/* 🎵 Player Bar (Lark Style Dark Blue) */}
+      <div className="bg-[#18162e] border-t border-white/5 p-2 pb-3">
+        
+        <audio ref={audioRef} src={audioLink} onEnded={playNext} autoPlay />
+        
+        {/* Progress Bar (Top Line) */}
+        <div className="w-full h-[2px] bg-gray-700 mb-2 relative">
+             <div className="absolute top-0 left-0 h-full bg-blue-500 w-1/3 animate-pulse"></div>
         </div>
 
-        {/* 2. Controls */}
-        <div className="flex items-center gap-4">
-          <button onClick={playPrev} className="text-gray-300 hover:text-white"><SkipBack size={20} /></button>
-          
-          <button onClick={togglePlay} className="glass-btn p-3 rounded-full text-white bg-green-500/20">
-            {isPlaying ? <Pause size={24} fill="white" /> : <Play size={24} fill="white" className="ml-0.5"/>}
-          </button>
-          
-          <button onClick={playNext} className="text-gray-300 hover:text-white"><SkipForward size={20} /></button>
-        </div>
+        <div className="flex items-center justify-between px-2">
+           
+           {/* Left: Image & Text */}
+           <div className="flex items-center gap-3 flex-1 overflow-hidden">
+             {/* Spinning Disc Effect */}
+             <div className={`w-10 h-10 rounded-full overflow-hidden border border-white/10 ${isPlaying ? 'animate-[spin_4s_linear_infinite]' : ''}`}>
+                <img src={imageLink} className="w-full h-full object-cover" />
+             </div>
+             
+             <div className="flex flex-col min-w-0">
+               <h4 className="text-white font-semibold text-sm truncate">{currentSong.name}</h4>
+               <p className="text-gray-400 text-xs truncate">{currentSong.artists.primary[0]?.name}</p>
+             </div>
+           </div>
 
-        {/* 3. Actions */}
-        <div className="flex items-center justify-end gap-3 w-[30%]">
-          <a href={getAudioUrl(currentSong)} download target="_blank" className="text-gray-300 hover:text-green-400">
-            <Download size={20} />
-          </a>
-          <div className="hidden sm:flex items-center gap-2">
-             <input type="range" min="0" max="1" step="0.1" value={volume} onChange={(e)=>setVolume(parseFloat(e.target.value))} className="w-16 h-1 bg-gray-600 rounded-lg accent-green-400 cursor-pointer"/>
-          </div>
+           {/* Right: Controls */}
+           <div className="flex items-center gap-4">
+              <button onClick={togglePlay} className="text-white hover:scale-110 transition">
+                {isPlaying ? <Pause size={28} fill="white" /> : <Play size={28} fill="white" />}
+              </button>
+              
+              <button onClick={playNext} className="text-gray-300 hover:text-white">
+                <SkipForward size={24} fill="currentColor" />
+              </button>
+           </div>
+
         </div>
       </div>
     </div>
